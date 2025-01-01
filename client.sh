@@ -1,12 +1,19 @@
 #!/bin/bash
 
-last_message=""
+last_sent_message=""
+last_received_message=""
 server_address=""
 base16_key=""
 
 # Function to send a message
 send_message() {
     local message="$1"
+    if [[ "$message" == "$last_sent_message" ]]; then
+        echo "The message is identical to the last sent message. Ignoring."
+        return
+    fi
+
+    last_sent_message="$message"
     local encoded_message
     encoded_message=$(echo -n "$message" | xxd -p | tr -d '\n')
     local url="${server_address}/send.${encoded_message}?key=${base16_key}"
@@ -25,8 +32,8 @@ read_messages() {
 
     while :; do
         data=$(curl -s "$url")
-        if [[ "$data" != "$last_message" ]]; then
-            last_message="$data"
+        if [[ "$data" != "$last_received_message" && "$data" != $(echo -n "$last_sent_message" | xxd -p | tr -d '\n') ]]; then
+            last_received_message="$data"
             decoded_message=$(echo -n "$data" | xxd -r -p 2>/dev/null)
             if [[ $? -eq 0 ]]; then
                 echo "RECEIVE: $decoded_message"

@@ -1,7 +1,8 @@
 import http from 'http';
 import readline from 'readline';
 
-let lastMessage = '';
+let lastSentMessage = ''; // Last Sended Message
+let lastReceivedMessage = ''; // ast Received Message
 let serverAddress = '';
 let base16Key = '';
 
@@ -11,8 +12,13 @@ const rl = readline.createInterface({
 });
 
 function sendMessage(message) {
-  // Encode hex Message
-  const encodedMessage = Buffer.from(message, 'utf8').toString('hex'); 
+  if (message === lastSentMessage) {
+    console.log('The message is identical to the last sent message. Ignoring.');
+    return;
+  }
+
+  lastSentMessage = message;
+  const encodedMessage = Buffer.from(message, 'utf8').toString('hex');
   const url = `${serverAddress}/send.${encodedMessage}?key=${base16Key}`;
 
   http.get(url, (res) => {
@@ -37,11 +43,12 @@ function readMessages() {
     });
 
     res.on('end', () => {
-      if (data && data !== lastMessage) {
-        lastMessage = data;
-        // Encode hex Message
+      if (data && data !== lastReceivedMessage && data !== Buffer.from(lastSentMessage, 'utf8').toString('hex')) {
+        lastReceivedMessage = data;
         const decodedMessage = Buffer.from(data, 'hex').toString('utf8');
         console.log(`RECEIVE: ${decodedMessage}`);
+      } else {
+        console.log('No new messages or duplicate message ignored.');
       }
     });
   }).on('error', (err) => {
@@ -55,7 +62,7 @@ rl.question('Enter server address: ', (address) => {
   serverAddress = address.startsWith('http://') || address.startsWith('https://') 
     ? address 
     : `http://${address}`;
-  
+
   rl.question('Enter Base16 key: ', (key) => {
     base16Key = key;
     console.log('Connecting to server...');
