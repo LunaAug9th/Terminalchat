@@ -13,7 +13,6 @@ const rl = readline.createInterface({
 
 function sendMessage(message) {
   if (message === lastSentMessage) {
-    console.log('The message is identical to the last sent message. Ignoring.');
     return;
   }
 
@@ -47,8 +46,6 @@ function readMessages() {
         lastReceivedMessage = data;
         const decodedMessage = Buffer.from(data, 'hex').toString('utf8');
         console.log(`RECEIVE: ${decodedMessage}`);
-      } else {
-        console.log('No new messages or duplicate message ignored.');
       }
     });
   }).on('error', (err) => {

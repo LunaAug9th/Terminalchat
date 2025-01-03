@@ -9,7 +9,6 @@ base16_key=""
 send_message() {
     local message="$1"
     if [[ "$message" == "$last_sent_message" ]]; then
-        echo "The message is identical to the last sent message. Ignoring."
         return
     fi
 
