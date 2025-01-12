@@ -1,6 +1,7 @@
 # TerminalChat Prototype
 
-This repository is a prototype of TerminalChat. I made it simpler than I originally planned.
+Hi, I'm Henry, the owner who was impressed by PySkywifi and created this repository
+and This repository is a prototype of TerminalChat. I made it simpler than I originally planned.
 
 ## Getting Started
 
