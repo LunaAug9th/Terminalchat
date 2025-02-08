@@ -1,10 +1,11 @@
 import http from 'http';
 import readline from 'readline';
 
-let lastSentMessage = ''; // Last Sended Message
-let lastReceivedMessage = ''; // ast Received Message
+let lastSentMessage = '';
+let lastReceivedMessage = '';
 let serverAddress = '';
 let base16Key = '';
+let channel = '';
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -18,7 +19,7 @@ function sendMessage(message) {
 
   lastSentMessage = message;
   const encodedMessage = Buffer.from(message, 'utf8').toString('hex');
-  const url = `${serverAddress}/send.${encodedMessage}?key=${base16Key}`;
+  const url = `${serverAddress}/channel/${channel}/send.${encodedMessage}?key=${base16Key}`;
 
   http.get(url, (res) => {
     if (res.statusCode === 200) {
@@ -32,7 +33,7 @@ function sendMessage(message) {
 }
 
 function readMessages() {
-  const url = `${serverAddress}/read?key=${base16Key}`;
+  const url = `${serverAddress}/channel/${channel}/read?key=${base16Key}`;
 
   http.get(url, (res) => {
     let data = '';
@@ -52,7 +53,7 @@ function readMessages() {
     console.error('Error:', err.message);
   });
 
-  setTimeout(readMessages, 250); // 250ms Delay Repeat
+  setTimeout(readMessages, 250);
 }
 
 rl.question('Enter server address: ', (address) => {
@@ -62,13 +63,20 @@ rl.question('Enter server address: ', (address) => {
 
   rl.question('Enter Base16 key: ', (key) => {
     base16Key = key;
-    console.log('Connecting to server...');
-
-    // Start reading messages in a loop
-    readMessages();
-
-    rl.on('line', (input) => {
-      sendMessage(input.trim());
+    rl.question('Is this a multi-channel server? (y/n): ', (multiChannel) => {
+      if (multiChannel.toLowerCase() === 'y') {
+        rl.question('Enter channel number: ', (ch) => {
+          channel = ch;
+          console.log(`Connecting to server on channel ${channel}...`);
+          readMessages();
+          rl.on('line', (input) => sendMessage(input.trim()));
+        });
+      } else {
+        channel = 'default';
+        console.log('Connecting to server...');
+        readMessages();
+        rl.on('line', (input) => sendMessage(input.trim()));
+      }
     });
   });
 });

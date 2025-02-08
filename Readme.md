@@ -45,6 +45,15 @@ node /home/<username>/TerminalChat/client.mjs
 
 3. **Sending Messages:**
    - Once connected without error, type your message and press the `Enter` key to send it.
+---
+### **URL formats:**
+just a server:
+(server address)/read?key=(hex key)
+(server address)/send?key=(hex key)
+
+Multi-channel server:
+(server address)/(channel number)/read?key=(hex key)
+(server address)/(channel number)/send?key=(hex key)
 
 ---
 Enjoy using TerminalChat!
